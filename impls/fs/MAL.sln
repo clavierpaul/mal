@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "step0_repl", "step0_repl\step0_repl.fsproj", "{DA6DA297-F986-40DB-8934-06F2264E1835}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "step1_read_print", "step1_read_print\step1_read_print.fsproj", "{43FEA53B-38CD-4E72-8512-CEA4AFF2F1A0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DA6DA297-F986-40DB-8934-06F2264E1835}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA6DA297-F986-40DB-8934-06F2264E1835}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA6DA297-F986-40DB-8934-06F2264E1835}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA6DA297-F986-40DB-8934-06F2264E1835}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43FEA53B-38CD-4E72-8512-CEA4AFF2F1A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43FEA53B-38CD-4E72-8512-CEA4AFF2F1A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43FEA53B-38CD-4E72-8512-CEA4AFF2F1A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43FEA53B-38CD-4E72-8512-CEA4AFF2F1A0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
