@@ -2,8 +2,7 @@ module MAL.Printer
 
 open Types
 
-let rec pr_str data =
-    match data with
+let rec pr_str = function
     | MalNumber n -> string n
     | MalSymbol s -> s
     | MalList l ->

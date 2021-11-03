@@ -1,5 +1,10 @@
 open System
-open MAL 
+open MAL
+
+let READ = Reader.read_str
+let EVAL ast = ast
+let PRINT = Printer.pr_str
+let rep input = input |> READ |> EVAL |> PRINT
 
 let rec programLoop () =
     printf "user> "
@@ -7,7 +12,7 @@ let rec programLoop () =
     match input with
     | null -> ()
     | s ->
-        printfn $"{Commands.rep s}"
+        printfn $"{rep s}"
         programLoop ()
 
 [<EntryPoint>]

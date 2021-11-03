@@ -9,4 +9,4 @@
 IMPLS = fs
 
 # Map of step (e.g. "step8") to executable file for that step
-fs_STEP_TO_PROG = impls/fs/build/$($(1))/$($(1))
+fs_STEP_TO_PROG = impls/fs/$($(1))

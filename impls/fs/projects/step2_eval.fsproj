@@ -7,15 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Types.fs" />
-        <Compile Include="Reader.fs" />
-        <Compile Include="Printer.fs" />
-        <Compile Include="Commands.fs" />
-        <Compile Include="Program.fs" />
+        <Compile Include="../types.fs" />
+        <Compile Include="../reader.fs" />
+        <Compile Include="../printer.fs" />
+        <Compile Include="../step2_eval.fs" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="FParsec" Version="1.1.1" />
+        <PackageReference Include="FParsec" Version="1.1.1" />
     </ItemGroup>
 
 </Project>
