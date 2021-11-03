@@ -1,7 +1,7 @@
 module MAL.Commands
 
 // Stubs
-let read input = input
+let read = Reader.read_str
 let eval ast = ast
-let print value = value
+let print = Printer.pr_str
 let rep input = input |> read |> eval |> print

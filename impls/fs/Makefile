@@ -1,5 +1,4 @@
 %: 
-	echo $%
 	cd $(@F) && dotnet build -o ../build/$(@F)
 
 clean:

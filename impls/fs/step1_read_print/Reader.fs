@@ -5,21 +5,23 @@ open Types
 
 let str s = pstring s
 
+let ws: Parser<string, unit> = manyChars (anyOf " \n\r\t,")
+
 let malValue, malValueRef = createParserForwardedToRef<MalType, unit>()
 
 let malNumber: Parser<MalType, unit> = pint32 |>> MalNumber
 
 let listBetweenStrings sOpen sClose pElement f =
     between (str sOpen) (str sClose)
-            (spaces >>. sepEndBy pElement spaces |>> f)
+            (ws >>. sepEndBy pElement ws |>> f)
 
 let malList = listBetweenStrings "(" ")" malValue MalList
 
-let malSymbol: Parser<MalType, unit> = many1Chars (asciiLetter <|> anyOf "+*-/") |>> MalSymbol
+let malSymbol: Parser<MalType, unit> = many1Chars (asciiLetter <|> digit <|> anyOf "+*-/>") |>> MalSymbol
 
 do malValueRef := choice [ malList; malNumber; malSymbol ]
 
-let malParser = spaces >>. malValue .>> spaces .>> eof
+let malParser = ws >>. malValue .>> ws .>> eof
 
 let read_str str =
     match run malParser str with
