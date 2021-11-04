@@ -17,9 +17,14 @@ let listBetweenStrings sOpen sClose pElement f =
 
 let malList = listBetweenStrings "(" ")" malValue MalList
 
-let malSymbol: Parser<MalType, unit> = many1Chars (asciiLetter <|> digit <|> anyOf "+*-/>") |>> MalSymbol
+let malTrue: Parser<MalType, unit> = stringReturn "true" <| MalBool true
+let malFalse: Parser<MalType, unit> = stringReturn "false" <| MalBool false
+let malBool: Parser<MalType, unit> = malTrue <|> malFalse
+let malNil: Parser<MalType, unit> = stringReturn "nil" <| MalNil
 
-do malValueRef := choice [ malList; malNumber; malSymbol ]
+let malSymbol: Parser<MalType, unit> = many1Chars (noneOf "{}()'`~^@\" \t\r\n") |>> MalSymbol
+
+do malValueRef := choice [ malList; malNumber; malBool; malNil; malSymbol ]
 
 let malParser = ws >>. malValue .>> ws .>> eof
 

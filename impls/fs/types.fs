@@ -1,9 +1,11 @@
 module MAL.Types
 
 type MalType =
-    | MalNumber of int
-    | MalSymbol of string
     | MalList of MalType list
+    | MalNumber of int
+    | MalNil
+    | MalBool of bool
+    | MalSymbol of string
     | MalFn of (MalType list -> MalType)
 
 let unwrapNumber = function
