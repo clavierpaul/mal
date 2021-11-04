@@ -27,7 +27,7 @@ let rec EVAL (env: ReplEnv) = function
 
         match List.head newList with
         | MalFn fn -> fn <| List.tail newList
-        | s -> failwith $"\"{Printer.pr_str s}\" is not a function"
+        | s -> failwith $"\"{Printer.pr_str true s}\" is not a function"
         
     | ast -> ast |> eval_ast env 
 
@@ -44,7 +44,7 @@ and eval_ast (env: ReplEnv) ast =
     
 let PRINT = Printer.pr_str
 
-let rep input = input |> READ |> EVAL repl_env |> PRINT
+let rep input = input |> READ |> EVAL repl_env |> PRINT true
 
 let rec programLoop () =
     printf "user> "

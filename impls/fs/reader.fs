@@ -22,13 +22,28 @@ let malFalse: Parser<MalType, unit> = stringReturn "false" <| MalBool false
 let malBool: Parser<MalType, unit> = malTrue <|> malFalse
 let malNil: Parser<MalType, unit> = stringReturn "nil" <| MalNil
 
+let stringLiteral =
+    let escape =  anyOf "\"\\n"
+                  |>> function
+                      | 'n' -> "\n"
+                      | c   -> string c // every other char is mapped to itself
+
+    let escapedCharSnippet = str "\\" >>. escape
+    let normalCharSnippet  = manySatisfy (fun c -> c <> '"' && c <> '\\')
+
+    between (str "\"") (str "\"")
+            (stringsSepBy normalCharSnippet escapedCharSnippet)
+
+let malString: Parser<MalType, unit> = stringLiteral |>> MalString
+
 let malSymbol: Parser<MalType, unit> = many1Chars (noneOf "{}()'`~^@\" \t\r\n") |>> MalSymbol
 
-do malValueRef := choice [ malList; malNumber; malBool; malNil; malSymbol ]
+do malValueRef := choice [ malList; malNumber; malBool; malNil; malString; malSymbol ]
 
 let malParser = ws >>. malValue .>> ws .>> eof
 
 let read_str str =
     match run malParser str with
-    | Success(result, _, _)   -> result
-    | Failure(errorMsg, _, _) -> failwith $"Error parsing input: {errorMsg}"
+    | Success (result, _, _)   -> result
+    // TODO: Actual error reporting
+    | Failure _ -> failwith "Unexpected EOF while parsing"
