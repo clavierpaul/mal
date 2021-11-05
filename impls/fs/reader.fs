@@ -14,6 +14,7 @@ let malNumber: Parser<MalType, unit> = pint32 |>> MalNumber
 let listBetweenStrings sOpen sClose pElement f =
     between (str sOpen) (str sClose)
             (ws >>. sepEndBy pElement ws |>> f)
+    <??> $"Opening \"{sOpen}\" unbalanced, missing closing \"{sClose}\""
 
 let malList = listBetweenStrings "(" ")" malValue MalList
 
@@ -33,17 +34,26 @@ let stringLiteral =
 
     between (str "\"") (str "\"")
             (stringsSepBy normalCharSnippet escapedCharSnippet)
+    <??> "Unexpected EOF while reading string literal"
 
 let malString: Parser<MalType, unit> = stringLiteral |>> MalString
 
-let malSymbol: Parser<MalType, unit> = many1Chars (noneOf "{}()'`~^@\" \t\r\n") |>> MalSymbol
+let malSymbol: Parser<MalType, unit> =
+    many1Chars (noneOf "{}()'`~^@\" \t\r\n" <|> fail "Unexpected EOF while reading program") |>> MalSymbol
 
 do malValueRef := choice [ malList; malNumber; malBool; malNil; malString; malSymbol ]
 
 let malParser = ws >>. malValue .>> ws .>> eof
 
+let constructErrorMsg str = function
+    | CompoundError (msg, _, _, _) -> str + msg
+    | Message msg                  -> str + msg
+    | _                            -> str
+    
 let read_str str =
     match run malParser str with
     | Success (result, _, _)   -> result
     // TODO: Actual error reporting
-    | Failure _ -> failwith "Unexpected EOF while parsing"
+    | Failure (msg, error, _) ->
+        let message = Array.fold constructErrorMsg "" <| ErrorMessageList.ToSortedArray error.Messages
+        failwith message

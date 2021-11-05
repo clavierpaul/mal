@@ -16,7 +16,6 @@ let rec programLoop () =
             printfn $"{rep s}"
         with
             | Failure msg -> error $"{msg}"
-            | :? Exception as msg -> error $"{msg}"
         programLoop ()
 
 [<EntryPoint>]
