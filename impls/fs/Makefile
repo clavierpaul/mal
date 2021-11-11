@@ -11,7 +11,7 @@ all: $(STEPS)
 	ln -s build/$@ $@
 
 STEP1_DEPS = types.fs reader.fs printer.fs
-STEP2_DEPS = $(STEP1_DEPS) common.fs
+STEP2_DEPS = $(STEP1_DEPS) common.fs state.fs
 STEP3_DEPS = $(STEP2_DEPS) env.fs
 STEP4_DEPS = $(STEP3_DEPS) core.fs
 

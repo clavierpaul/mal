@@ -1,59 +1,126 @@
 module MAL.Reader
 
-open FParsec
+open System
+
+#nowarn "40"
+
+open System.Text.RegularExpressions
 open Types
+open State
 
-let str s = pstring s
+let malRegex = Regex (@"[\s,]*(~@|[\[\]{}()'`~^@]|""(?:\\.|[^\\""])*""?|;.*|[^\s\[\]{}('""`,;)]*)", RegexOptions.Compiled)
+let stringRegex = Regex (@"""(?:[\\].|[^\\""])*""", RegexOptions.Compiled)
 
-let ws: Parser<string, unit> = manyChars (anyOf " \n\r\t,")
+type TokenStream = string list
 
-let malValue, malValueRef = createParserForwardedToRef<MalType, unit>()
+let peek =
+    State (fun (stream: TokenStream) -> List.head stream, stream)
 
-let malNumber: Parser<MalType, unit> = pint32 |>> MalNumber
+let tryPeek =
+    State (fun (stream: TokenStream) ->
+        let result =
+            match stream with
+            | [] -> None
+            | s  -> Some (List.head s)
+        (result, stream)
+    )
 
-let listBetweenStrings sOpen sClose pElement f =
-    between (str sOpen) (str sClose)
-            (ws >>. sepEndBy pElement ws |>> f)
-    <??> $"Opening \"{sOpen}\" unbalanced, missing closing \"{sClose}\""
+let next =
+    State (fun (stream: TokenStream) -> List.head stream, List.tail stream)
 
-let malList = listBetweenStrings "(" ")" malValue MalList
+let skip =
+    State (fun (stream: TokenStream) -> (), List.tail stream)
 
-let malTrue: Parser<MalType, unit> = stringReturn "true" <| MalBool true
-let malFalse: Parser<MalType, unit> = stringReturn "false" <| MalBool false
-let malBool: Parser<MalType, unit> = malTrue <|> malFalse
-let malNil: Parser<MalType, unit> = stringReturn "nil" <| MalNil
+let tokenize input: TokenStream =
+    let matches = malRegex.Matches input
+    // Copied-ish from the C# implementation
+    matches
+    |> Seq.map (fun m -> m.Groups.[1].Value)
+    |> Seq.filter (fun t -> (t <> null) && not (t = "") && not (t.[0] = ';'))
+    |> Seq.toList        
 
-let stringLiteral =
-    let escape =  anyOf "\"\\n"
-                  |>> function
-                      | 'n' -> "\n"
-                      | c   -> string c // every other char is mapped to itself
+let unescape (string: string) =
+    string
+        .Replace("\\n", "\n")
+        .Replace("\\\"", "\"")
+        .Replace("\\\\", "\\")
+        
+let read_atom (token: string) =
+    match Int32.TryParse token with
+    | true, int -> MalNumber int
+    | _ ->
+        if stringRegex.IsMatch token then
+            MalString <| unescape token.[1..(token.Length - 2)]
+        elif token.[0] = '"' then
+            failwith "\" unbalanced, expected closing \""
+        else
+            match token with
+            | "true"  -> MalBool true
+            | "false" -> MalBool false
+            | "nil"   -> MalNil
+            | s       -> MalSymbol s
 
-    let escapedCharSnippet = str "\\" >>. escape
-    let normalCharSnippet  = manySatisfy (fun c -> c <> '"' && c <> '\\')
-
-    between (str "\"") (str "\"")
-            (stringsSepBy normalCharSnippet escapedCharSnippet)
-    <??> "Unexpected EOF while reading string literal"
-
-let malString: Parser<MalType, unit> = stringLiteral |>> MalString
-
-let malSymbol: Parser<MalType, unit> =
-    many1Chars (noneOf "{}()'`~^@\" \t\r\n" <|> fail "Unexpected EOF while reading program") |>> MalSymbol
-
-do malValueRef := choice [ malList; malNumber; malBool; malNil; malString; malSymbol ]
-
-let malParser = ws >>. malValue .>> ws .>> eof
-
-let constructErrorMsg str = function
-    | CompoundError (msg, _, _, _) -> str + msg
-    | Message msg                  -> str + msg
-    | _                            -> str
+let rec read_form =
+    state {
+        let! token = peek
+        match token with
+        // Macros
+        | "'"  -> return! read_macro MacroQuote
+        | "`"  -> return! read_macro MacroQuasiquote
+        | "~"  -> return! read_macro MacroUnquote
+        | "~@" -> return! read_macro MacroSpliceUnquote
+        | "@"  -> return! read_macro MacroDeref
+        
+        // Lists
+        | "(" ->
+            do! skip
+            return! read_seq MalList "(" ")"
+        | "[" ->
+            do! skip
+            return! read_seq MalVector "[" "]"
+        
+        // Anything else is an atom (or invalid)
+        | _  ->
+            let! token = next
+            return read_atom token
+    }
     
-let read_str str =
-    match run malParser str with
-    | Success (result, _, _)   -> result
-    // TODO: Actual error reporting
-    | Failure (msg, error, _) ->
-        let message = Array.fold constructErrorMsg "" <| ErrorMessageList.ToSortedArray error.Messages
-        failwith message
+and read_seq malType sOpen sClose: State<TokenStream, MalType> =
+    state {
+        let rec buildSeq seq =
+            state {
+                let! token = tryPeek
+                match token with
+                | Some token ->
+                    if token = sClose then
+                        // Clear the stream
+                        do! skip
+                        return seq
+                    else
+                        let! value = read_form
+                        return! buildSeq <| Seq.append seq [value]
+                | None ->
+                    return failwith $"\"{sOpen}\" unbalanced, expected closing \"{sClose}\""
+            }
+        
+        let! seq = buildSeq []
+        return seq |> List.ofSeq |> malType
+    }
+    
+and read_macro macro =
+    state {
+        do! skip
+        let! value = read_form
+        return (MalMacro <| macro value)
+    }
+    
+let read_str input =
+    let tokens = tokenize input
+    if List.length tokens = 0 then
+        None
+    else
+        let value, stream = read_form |> State.run tokens
+        if List.length stream <> 0 then
+            failwith "Unexpected tokens in input"
+        else
+            Some value
