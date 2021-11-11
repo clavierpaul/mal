@@ -13,8 +13,7 @@ let stringRegex = Regex (@"""(?:[\\].|[^\\""])*""", RegexOptions.Compiled)
 
 type TokenStream = string list
 
-let peek =
-    State (fun (stream: TokenStream) -> List.head stream, stream)
+let peek = State (fun (stream: TokenStream) -> List.head stream, stream)
 
 let tryPeek =
     State (fun (stream: TokenStream) ->
@@ -25,11 +24,19 @@ let tryPeek =
         (result, stream)
     )
 
-let next =
-    State (fun (stream: TokenStream) -> List.head stream, List.tail stream)
+let next = State (fun (stream: TokenStream) -> List.head stream, List.tail stream)
 
-let skip =
-    State (fun (stream: TokenStream) -> (), List.tail stream)
+let skip = State (fun (stream: TokenStream) -> (), List.tail stream)
+
+let rec pair = function
+    | [] | [_] -> []
+    | x1::x2::tail -> (x1, x2) :: (pair tail)
+    
+let convertPair pair: MalType * MalType =
+    match pair with
+    | MalString s, v     -> MalString  s, v
+    | MalKeyword k, v    -> MalKeyword k, v
+    | _                  -> failwith "Invalid keyword type"
 
 let tokenize input: TokenStream =
     let matches = malRegex.Matches input
@@ -53,6 +60,8 @@ let read_atom (token: string) =
             MalString <| unescape token.[1..(token.Length - 2)]
         elif token.[0] = '"' then
             failwith "\" unbalanced, expected closing \""
+        elif token.[0] = ':' then
+            MalKeyword token.[1..]
         else
             match token with
             | "true"  -> MalBool true
@@ -74,18 +83,23 @@ let rec read_form =
         // Lists
         | "(" ->
             do! skip
-            return! read_seq MalList "(" ")"
+            let! seq = read_seq "(" ")"
+            return MalList seq
         | "[" ->
             do! skip
-            return! read_seq MalVector "[" "]"
-        
+            let! seq = read_seq "[" "]"
+            return MalVector seq
+        | "{" ->
+            do! skip
+            return! read_hashmap
+            
         // Anything else is an atom (or invalid)
         | _  ->
             let! token = next
             return read_atom token
     }
     
-and read_seq malType sOpen sClose: State<TokenStream, MalType> =
+and read_seq sOpen sClose =
     state {
         let rec buildSeq seq =
             state {
@@ -104,14 +118,28 @@ and read_seq malType sOpen sClose: State<TokenStream, MalType> =
             }
         
         let! seq = buildSeq []
-        return seq |> List.ofSeq |> malType
+        return seq |> List.ofSeq
     }
     
 and read_macro macro =
     state {
         do! skip
         let! value = read_form
-        return (MalMacro <| macro value)
+        return MalMacro <| macro value
+    }
+
+and read_hashmap: State<TokenStream, MalType> =
+    state {
+        let! seq = read_seq "{" "}"
+        if Seq.length seq % 2 <> 0 then
+            return failwith "Invalid hashmap definition"
+        else
+            let map = seq
+                      |> pair
+                      |> List.map convertPair
+                      |> Map.ofList
+            
+            return MalHashmap map
     }
     
 let read_str input =
