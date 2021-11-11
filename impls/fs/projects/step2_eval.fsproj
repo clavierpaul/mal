@@ -7,7 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-	<Compile Include="../common.fs" />
+	    <Compile Include="../common.fs" />
+        <Compile Include="../state.fs" />
         <Compile Include="../types.fs" />
         <Compile Include="../reader.fs" />
         <Compile Include="../printer.fs" />

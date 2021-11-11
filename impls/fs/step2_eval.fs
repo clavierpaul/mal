@@ -44,7 +44,10 @@ and eval_ast (env: ReplEnv) ast =
     
 let PRINT = Printer.pr_str
 
-let rep input = input |> READ |> EVAL repl_env |> PRINT true
+let rep input =
+    match input |> READ with
+    | Some program -> program |> EVAL repl_env |> PRINT true
+    | None -> ""
 
 let rec programLoop () =
     printf "user> "
