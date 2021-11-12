@@ -18,19 +18,22 @@ let repl_env: ReplEnv =
 let READ = Reader.read_str
 
 let rec EVAL (env: ReplEnv) = function
-    | MalList [] -> MalList []
-    | MalList l ->
+    | MalList    l -> eval_list env l
+    | MalVector  v -> MalVector  <| List.map (EVAL env) v
+    | MalHashmap h -> MalHashmap <| Map.map (fun _ -> EVAL env) h
+    | ast -> ast |> eval_ast env 
+
+and eval_list env = function
+    | [] -> MalList []
+    | l  ->
         let newList =
             match eval_ast env <| MalList l with
             | MalList l -> l
-            | _ -> failwith "Result of list eval was not a list"
+            | _         -> failwith "Result of list eval was not a list"
 
         match List.head newList with
         | MalFn fn -> fn <| List.tail newList
-        | s -> failwith $"\"{Printer.pr_str true s}\" is not a function"
-    | MalVector v -> MalVector <| List.map (EVAL env) v
-    | MalHashmap h -> MalHashmap <| Map.map (fun _ -> EVAL env) h
-    | ast -> ast |> eval_ast env 
+        | s        -> failwith $"\"{Printer.pr_str true s}\" is not a function"
 
 and eval_ast (env: ReplEnv) ast =
     let env_lookup symbol =
