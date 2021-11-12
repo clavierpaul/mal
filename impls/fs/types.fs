@@ -31,13 +31,13 @@ type MalType =
         MalNumber <| MalType.UnwrapNumber a + MalType.UnwrapNumber b
         
     static member (-) (a, b) =
-        MalNumber <| MalType.UnwrapNumber a + MalType.UnwrapNumber b
+        MalNumber <| MalType.UnwrapNumber a - MalType.UnwrapNumber b
         
     static member (*) (a, b) =
-        MalNumber <| MalType.UnwrapNumber a + MalType.UnwrapNumber b
+        MalNumber <| MalType.UnwrapNumber a * MalType.UnwrapNumber b
 
     static member (/) (a, b) =
-        MalNumber <| MalType.UnwrapNumber a + MalType.UnwrapNumber b
+        MalNumber <| MalType.UnwrapNumber a / MalType.UnwrapNumber b
     
     override x.Equals yObj =
         match yObj with

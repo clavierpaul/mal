@@ -28,12 +28,13 @@ let rec EVAL (env: ReplEnv) = function
         match List.head newList with
         | MalFn fn -> fn <| List.tail newList
         | s -> failwith $"\"{Printer.pr_str true s}\" is not a function"
-        
+    | MalVector v -> MalVector <| List.map (EVAL env) v
+    | MalHashmap h -> MalHashmap <| Map.map (fun _ -> EVAL env) h
     | ast -> ast |> eval_ast env 
 
 and eval_ast (env: ReplEnv) ast =
     let env_lookup symbol =
-        match env.TryFind symbol with
+        match repl_env |> Map.tryFind symbol with
         | Some f -> f
         | None -> failwith $"Unknown symbol \"{symbol}\""
         
