@@ -1,5 +1,7 @@
 module MAL.Types
 
+// TODO: Monads? Functors?
+[<CustomEquality; CustomComparison>]
 type MalType =
     | MalList of MalType list
     | MalVector of MalType list
@@ -10,35 +12,49 @@ type MalType =
     | MalHashmap of Map<MalType, MalType>
     | MalKeyword of string
     | MalSymbol of string
-    | MalFn of MalFn
+    | MalFn of (MalType list -> MalType)
     | MalMacro of MalMacro
     
-    static member unwrapNumber = function
+    static member private UseComparison f a b =
+        match a, b with
+        | MalString  a, MalString  b -> f a b
+        | MalString  a, MalKeyword b -> f a b
+        | MalKeyword a, MalString  b -> f a b
+        | MalKeyword a, MalKeyword b -> f a b
+        | a, _ -> invalidArg "a" $"Comparison not implemented for type {a.GetType}"
+        
+    static member private UnwrapNumber = function
         | MalNumber n -> n
-        | s -> failwith $"Error: {s} is not a number"
+        | s -> invalidArg "s" $"{s} is not a number"
     
     static member (+) (a, b) =
-        MalNumber <| MalType.unwrapNumber a + MalType.unwrapNumber b
+        MalNumber <| MalType.UnwrapNumber a + MalType.UnwrapNumber b
         
     static member (-) (a, b) =
-        MalNumber <| MalType.unwrapNumber a + MalType.unwrapNumber b
+        MalNumber <| MalType.UnwrapNumber a + MalType.UnwrapNumber b
         
     static member (*) (a, b) =
-        MalNumber <| MalType.unwrapNumber a + MalType.unwrapNumber b
+        MalNumber <| MalType.UnwrapNumber a + MalType.UnwrapNumber b
 
     static member (/) (a, b) =
-        MalNumber <| MalType.unwrapNumber a + MalType.unwrapNumber b
+        MalNumber <| MalType.UnwrapNumber a + MalType.UnwrapNumber b
     
-and
-    [<CustomEquality; CustomComparison>]
-    MalFn =
-        | MalFn of (MalType list -> MalType)
-        
-        override x.Equals _ = invalidArg "x" "Attempted to compare with a function"
-        override x.GetHashCode () = invalidArg "x" "Attempted to hash a function"
-        
-        interface System.IComparable with
-            member x.CompareTo _ = invalidArg "x" "Attempted to compare with a function"
+    override x.Equals yObj =
+        match yObj with
+        | :? MalType as y -> MalType.UseComparison (=) x y
+        | _ -> false
+    
+    override x.GetHashCode () =
+        match x with
+        | MalString s -> s.GetHashCode ()
+        | MalKeyword s -> s.GetHashCode ()
+        | t -> invalidArg "t" $"Hash code not implemented for type {t.GetType}"
+    
+    interface System.IComparable with
+        member x.CompareTo yObj =
+            match yObj with
+            | :? MalType as y -> MalType.UseComparison compare x y
+            | _ -> invalidArg "yObj" "Object is not of MalType"
         
 and MalMacro =
     | MacroQuote of MalType
