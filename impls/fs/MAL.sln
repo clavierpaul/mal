@@ -8,6 +8,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "step2_eval", "projects\step
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "step3_env", "projects\step3_env.fsproj", "{58248993-F0CD-4B9D-BD83-0D8F2CB31B30}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "step4_if_fn_do", "projects\step4_if_fn_do.fsproj", "{EF25BABC-E9A5-46B0-AB3A-B109693387EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,5 +30,7 @@ Global
 		{26D10A56-1E82-4ECA-819E-10D00FE5C8FA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{58248993-F0CD-4B9D-BD83-0D8F2CB31B30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{58248993-F0CD-4B9D-BD83-0D8F2CB31B30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF25BABC-E9A5-46B0-AB3A-B109693387EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF25BABC-E9A5-46B0-AB3A-B109693387EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 EndGlobal
