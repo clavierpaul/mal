@@ -1,5 +1,5 @@
 open System
-open MAL
+open Mal
 open Types
 open State
 let malFunc2From operator = function

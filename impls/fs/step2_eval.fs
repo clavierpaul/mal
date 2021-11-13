@@ -1,5 +1,5 @@
 open System
-open MAL
+open Mal
 open Types
 
 // These will be more elegantly wrapped in step 3
