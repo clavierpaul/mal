@@ -1,8 +1,6 @@
-namespace MAL
+namespace Mal
 
-open MAL
 open Types
-open Printer
 open State
 
 type ReplEnv = Map<string, MalType>

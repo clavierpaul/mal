@@ -1,4 +1,4 @@
-module MAL.Printer
+module Mal.Printer
 
 open Types
 

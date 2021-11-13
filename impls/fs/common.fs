@@ -1,5 +1,5 @@
 [<AutoOpen>]
-module MAL.Common
+module Mal.Common
 
 open System
 

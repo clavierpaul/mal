@@ -1,1 +1,1 @@
-module MAL.Core
+module Mal.Core

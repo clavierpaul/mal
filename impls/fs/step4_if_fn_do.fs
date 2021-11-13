@@ -1,7 +1,8 @@
 open System
-open MAL
+open Mal
 open Types
 open State
+
 let malFunc2From operator = function
     | [a; b] -> operator a b
     | l -> failwith $"Operator expected 2 arguments but was given {List.length l}"

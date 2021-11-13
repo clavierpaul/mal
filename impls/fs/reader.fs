@@ -1,4 +1,4 @@
-module MAL.Reader
+module Mal.Reader
 
 open System
 

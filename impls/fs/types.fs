@@ -1,4 +1,4 @@
-module MAL.Types
+module Mal.Types
 
 // TODO: Monads? Functors?
 [<CustomEquality; CustomComparison>]

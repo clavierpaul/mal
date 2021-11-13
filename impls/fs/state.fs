@@ -1,4 +1,4 @@
-module MAL.State
+module Mal.State
 
 type State<'state, 'result> = State of ('state -> 'result * 'state)
 
