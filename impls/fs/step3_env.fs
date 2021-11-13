@@ -60,7 +60,7 @@ and eval_list l =
                     return failwith "let* requires 2 arguments"
                 else
                     let! currentEnv = State.get
-                    let bindings = unwrapList tail.[0]
+                    let bindings = unwrapSeq tail.[0]
                     if List.length bindings % 2 <> 0 then
                         return failwith "Binding list contains an odd number of elements"
                     else

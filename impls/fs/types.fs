@@ -63,6 +63,11 @@ and MalMacro =
     | MacroSpliceUnquote of MalType
     | MacroDeref of MalType
 
+let unwrapSeq = function
+    | MalList l   -> l
+    | MalVector v -> v
+    | s -> failwith $"{s} is not a sequence type"
+
 let unwrapSymbol = function
     | MalSymbol s -> s
     | s -> failwith $"{s} is not a valid symbol"

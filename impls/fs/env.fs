@@ -40,6 +40,6 @@ module Env =
         let rec get' env =
             match find' key env with
             | Some e -> (e.data |> Map.find key), env
-            | None -> failwith $"\"{key}\" is not defined"
+            | None -> failwith $"'{key}' not found"
         
         State get'
