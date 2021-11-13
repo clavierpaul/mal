@@ -27,10 +27,6 @@ let tryPeek =
 let next = State (fun (stream: TokenStream) -> List.head stream, List.tail stream)
 
 let skip = State (fun (stream: TokenStream) -> (), List.tail stream)
-
-let rec pair = function
-    | [] | [_] -> []
-    | x1::x2::tail -> (x1, x2) :: (pair tail)
     
 let convertPair pair: MalType * MalType =
     match pair with
@@ -98,7 +94,7 @@ let rec read_form =
             let! token = next
             return read_atom token
     }
-    
+
 and read_seq sOpen sClose =
     state {
         let rec buildSeq seq =

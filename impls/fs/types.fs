@@ -46,7 +46,7 @@ type MalType =
     
     override x.GetHashCode () =
         match x with
-        | MalString s -> s.GetHashCode ()
+        | MalString  s -> s.GetHashCode ()
         | MalKeyword s -> s.GetHashCode ()
         | t -> invalidArg "t" $"Hash code not implemented for type {t.GetType}"
     
@@ -62,3 +62,16 @@ and MalMacro =
     | MacroUnquote of MalType
     | MacroSpliceUnquote of MalType
     | MacroDeref of MalType
+
+let unwrapSymbol = function
+    | MalSymbol s -> s
+    | s -> failwith $"{s} is not a valid symbol"
+
+let unwrapList = function
+    | MalList l -> l
+    | s -> failwith $"{s} is not a list"
+
+let keyToString = function
+    | MalSymbol s -> s
+    | MalKeyword s -> s
+    | s -> failwith $"{s} is not a valid key"
