@@ -20,7 +20,7 @@ module Env =
         { outer = Some env
           data = Map.empty }
 
-    let set (key, value) =
+    let set key value =
         let set' env =
             { env with data = Map.add key value env.data }
         
@@ -43,3 +43,16 @@ module Env =
             | None -> failwith $"'{key}' not found"
         
         State get'
+    
+    let init binds exprs =
+        let paired = List.map2 (fun b e -> (b, e)) binds exprs
+        let setter (k, v) =
+            state {
+                do! set k v
+                return ()
+            }
+        
+        state {
+            let! _ = paired |> State.mapList setter
+            return ()
+        }

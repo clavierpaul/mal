@@ -40,7 +40,7 @@ and addBinding (key, value) =
     state {
         let key = unwrapSymbol key
         let! evaluated = EVAL value
-        do! Env.set (key, evaluated)
+        do! Env.set key evaluated
         return evaluated
     }
 
@@ -70,6 +70,25 @@ and eval_list l =
                         let! result = EVAL tail.[1]
                         do! State.put currentEnv
                         return result
+            | MalSymbol "if"::tail ->
+                if List.length tail < 2 then
+                    return failwith "if statement requires a body"
+                elif List.length tail > 3 then
+                    return failwith "Too many branches in if statement"
+                else
+                    let! conditionResult = EVAL tail.[0]
+                    let firstBranch =
+                        match conditionResult with
+                        | MalBool false | MalNil -> false
+                        | _ -> true
+                    
+                    if firstBranch then
+                        return! EVAL tail.[1]
+                    else
+                        if List.length tail = 3 then
+                            return! EVAL tail.[2]
+                        else
+                            return MalNil
             | l ->
                 let! result = eval_ast <| MalList l
                 let newList = unwrapList result

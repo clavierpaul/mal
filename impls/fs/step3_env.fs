@@ -40,7 +40,7 @@ and addBinding (key, value) =
     state {
         let key = unwrapSymbol key
         let! evaluated = EVAL value
-        do! Env.set (key, evaluated)
+        do! Env.set key evaluated
         return evaluated
     }
 

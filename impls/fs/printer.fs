@@ -18,7 +18,7 @@ let rec pr_str print_readably = function
     | MalVector v     -> printList print_readably "[" "]" v
     | MalMacro m      -> "(" + printMacro print_readably m + ")"
     | MalKeyword k    -> $":{k}"
-    | MalType.MalFn _ -> "<function>" // Why does this require a qualified name??????
+    | MalFn _ -> "#<function>"
     | MalHashmap h    -> "{" + printHashmap print_readably h + "}"
     | MalString s ->
         if print_readably then
