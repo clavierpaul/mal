@@ -21,7 +21,7 @@ let rec EVAL ast: State<Env, MalType> =
         match ast with
         | MalList    l -> return! eval_list l
         | MalVector  v ->
-            let! v = state.MapList EVAL v
+            let! v = State.mapList EVAL v
             return MalVector v
         | MalHashmap h ->
             let mapEval (k, ast) = state {
@@ -31,7 +31,7 @@ let rec EVAL ast: State<Env, MalType> =
             
             // This code is very efficient!
             let l = Map.toList h
-            let! nl = state.MapList mapEval l
+            let! nl = State.mapList mapEval l
             return MalHashmap <| Map.ofList nl
         | ast -> return! eval_ast ast 
     }
@@ -66,7 +66,7 @@ and eval_list l =
                     else
                         do! State.put <| Env.ofEnv currentEnv
                         let bindings = pair bindings
-                        let! _ = bindings |> state.MapList addBinding
+                        let! _ = bindings |> State.mapList addBinding
                         let! result = EVAL tail.[1]
                         do! State.put currentEnv
                         return result
@@ -83,7 +83,7 @@ and eval_ast ast =
     state {
         match ast with
         | MalSymbol s -> return! Env.get s
-        | MalList l   -> let! nl = l |> state.MapList EVAL in return MalList nl
+        | MalList l   -> let! nl = l |> State.mapList EVAL in return MalList nl
         | ast         -> return ast
     }
     
